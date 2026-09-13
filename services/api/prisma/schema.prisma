@@ -1,0 +1,10 @@
+// Prisma shell — generator + datasource only. Domain models arrive in T2.
+// Enum values must be copied verbatim from shared/src (agent.ts, task.ts, ...).
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}

@@ -1,0 +1,19 @@
+{
+  "name": "ai-office",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "services/api",
+    "services/ai",
+    "shared"
+  ],
+  "scripts": {
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "verify:t0": "npm run typecheck --workspace=@ai-office/shared-types",
+    "verify:t1": "npm run verify:t1 --workspace=@ai-office/ai"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}
