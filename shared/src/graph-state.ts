@@ -7,12 +7,12 @@
 // Keep every channel JSON-serializable (ISO strings, plain objects/arrays).
 import { Annotation } from "@langchain/langgraph";
 import { z } from "zod";
-import type { Blocker } from "./blocker.js";
-import { BlockerSchema } from "./blocker.js";
-import type { Decision } from "./decision.js";
-import { DecisionSchema } from "./decision.js";
-import type { Task } from "./task.js";
-import { TaskSchema } from "./task.js";
+import type { Blocker } from "./blocker";
+import { BlockerSchema } from "./blocker";
+import type { Decision } from "./decision";
+import { DecisionSchema } from "./decision";
+import type { Task } from "./task";
+import { TaskSchema } from "./task";
 
 export const InterruptPayloadSchema = z.object({
   taskId: z.string().uuid(),

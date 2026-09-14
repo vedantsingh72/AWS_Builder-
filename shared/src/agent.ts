@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { StartupContextSchema } from "./startup.js";
-import { DecisionSchema } from "./decision.js";
+import { StartupContextSchema } from "./startup";
+import { DecisionSchema } from "./decision";
 
 // ---- Fixed six-role roster. Nothing outside this survives (T4 filter, T5 DB enum). ----
 export const AgentRoleSchema = z.enum([

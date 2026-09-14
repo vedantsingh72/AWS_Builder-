@@ -14,6 +14,7 @@
     "verify:t1": "npm run verify:t1 --workspace=@ai-office/ai"
   },
   "devDependencies": {
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "tsx": "^4.19.0"
   }
 }

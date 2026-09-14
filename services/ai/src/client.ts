@@ -1,7 +1,7 @@
 // THE only path that writes to api's DB — over HTTP, never direct Postgres.
 // Domain methods (tasks, decisions, executions) land here in later tasks;
 // T1 needs no writes, so this ships as the typed transport primitive.
-import { config } from "./config.js";
+import { config } from "./config";
 
 export class ApiClient {
   constructor(readonly baseUrl: string = config.apiBaseUrl) {}

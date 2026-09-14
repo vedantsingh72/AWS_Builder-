@@ -1,10 +1,295 @@
-// Prisma shell — generator + datasource only. Domain models arrive in T2.
-// Enum values must be copied verbatim from shared/src (agent.ts, task.ts, ...).
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+}
+
+enum StartupStatus {
+  DRAFT
+  APPROVED
+}
+
+
+enum AgentRole {
+  CEO
+  TECH_MANAGER
+  GROWTH_MANAGER
+  BACKEND_ENGINEER
+  FRONTEND_ENGINEER
+  MARKETING_EMPLOYEE
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  BLOCKED
+  REVIEW
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+
+enum DecisionStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+}
+
+enum DecisionSource {
+  FOUNDER_MEETING
+  FOUNDER_APPROVAL
+}
+
+
+enum BlockerResolvedTier {
+  MANAGER
+  CEO
+  FOUNDER
+}
+
+enum BlockerStatus {
+  OPEN
+  RESOLVED
+}
+
+
+enum NotificationType {
+  GENERAL
+  FOUNDER_INTERRUPT
+}
+
+enum NotificationStatus {
+  UNREAD
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+
+
+model Startup {
+  id             String        @id @default(cuid())
+  rawDescription String
+  industry       String?
+  goal           String?
+  stage          String?
+  constraints    String[]      @default([])
+  priorities     String[]      @default([])
+  status         StartupStatus @default(DRAFT)
+
+
+  threadId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  agents          Agent[]
+  decisions       Decision[]
+  tasks           Task[]
+  notifications   Notification[]
+  dailyReports    DailyReport[]
+  privateContexts AgentPrivateContext[]
+
+  @@map("startups")
+}
+
+
+
+model Agent {
+  id   String    @id @default(cuid())
+  role AgentRole
+
+  startupId String
+  startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  // CEO's managerId is null — root of the hierarchy.
+  managerId String?
+  manager   Agent?  @relation("AgentHierarchy", fields: [managerId], references: [id])
+  reports   Agent[] @relation("AgentHierarchy")
+
+  createdAt DateTime @default(now())
+
+  privateContext AgentPrivateContext?
+  tasksAssigned  Task[]               @relation("TaskAssignee")
+  tasksCreated   Task[]               @relation("TaskCreator")
+  decisionsMade  Decision[]
+
+  // One role per startup — T9's "calling instantiation twice must not duplicate" rule.
+  @@unique([startupId, role])
+  @@map("agents")
+}
+
+
+
+model AgentPrivateContext {
+  id String @id @default(cuid())
+
+  startupId String
+  startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  // Enforced one-to-one with the CEO agent at the application layer (T7's 403 check) —
+  // Prisma can't express "must be role=CEO" directly, so the service layer guards it.
+  agentId String @unique
+  agent   Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  // Metadata only (T7) — repo URL, API key text, connection notes. Never an actual
+  // external-API integration in the MVP.
+  resourceLabel String // e.g. "GitHub repo", "Stripe API key"
+  resourceValue String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("agent_private_contexts")
+}
+
+
+model Decision {
+  id String @id @default(cuid())
+
+  startupId String
+  startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  statement String // e.g. "Don't spend more than $500 on marketing this month"
+  scope     String? // free-text tag: "budget", "constraint", "goal" — for grouping/filtering
+  source    DecisionSource
+  status    DecisionStatus @default(ACTIVE)
+
+  // CEO node that recorded it (T12) — null if it originated purely from a T27 approval flow.
+  madeByAgentId String?
+  madeByAgent   Agent?  @relation(fields: [madeByAgentId], references: [id])
+
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime? // when PENDING flipped to ACTIVE/REJECTED
+
+  @@map("decisions")
+}
+
+
+
+model Task {
+  id String @id @default(cuid())
+
+  startupId String
+  startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+  status      TaskStatus   @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
+
+  parentTaskId String?
+  parentTask   Task?  @relation("TaskHierarchy", fields: [parentTaskId], references: [id])
+  childTasks   Task[] @relation("TaskHierarchy")
+
+  createdByAgentId String
+  createdByAgent   Agent  @relation("TaskCreator", fields: [createdByAgentId], references: [id])
+
+  assignedAgentId String
+  assignedAgent   Agent  @relation("TaskAssignee", fields: [assignedAgentId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  executions TaskExecution[]
+  blockers   Blocker[]
+
+  @@map("tasks")
+}
+
+
+
+model TaskExecution {
+  id String @id @default(cuid())
+
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  summary    String
+  artifact   String? // generated code stub / draft copy / whatever the worker produced
+  hasBlocker Boolean @default(false)
+  nextStep   String?
+
+  createdAt DateTime @default(now())
+
+  @@map("task_executions")
+}
+
+
+model Blocker {
+  id String @id @default(cuid())
+
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  description    String
+  status         BlockerStatus        @default(OPEN)
+  resolvedTier   BlockerResolvedTier? // set once resolved — tells you how far it climbed
+  resolutionNote String?
+
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+
+  notifications Notification[]
+
+  @@map("blockers")
+}
+
+
+model Notification {
+  id String @id @default(cuid())
+
+  startupId String
+  startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  type    NotificationType   @default(GENERAL)
+  status  NotificationStatus @default(UNREAD)
+  message String
+
+  blockerId String?
+  blocker   Blocker? @relation(fields: [blockerId], references: [id])
+
+  createdAt      DateTime  @default(now())
+  acknowledgedAt DateTime?
+  resolvedAt     DateTime?
+
+  @@map("notifications")
+}
+
+
+model DailyReport {
+  id String @id @default(cuid())
+
+  startupId String
+  startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  reportDate DateTime @default(now())
+
+  // T24's deterministic counts — computed in SQL, never by the LLM.
+  completedTasks   Int @default(0)
+  inProgressTasks  Int @default(0)
+  blockersResolved Int @default(0)
+  pendingDecisions Int @default(0)
+
+  // T25's LLM-written narrative, plus the IDs it referenced — T25's verify step
+  // cross-checks every one of these against a real row.
+  narrative             String
+  referencedTaskIds     String[] @default([])
+  referencedDecisionIds String[] @default([])
+
+  createdAt DateTime @default(now())
+
+  @@map("daily_reports")
 }

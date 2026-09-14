@@ -1,3 +1,3 @@
-export * from "./call.js";
-export { StructuredCallError } from "../errors.js";
-export type { CallErrorCode } from "../errors.js";
+export * from "./call";
+export { StructuredCallError } from "../errors";
+export type { CallErrorCode } from "../errors";

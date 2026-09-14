@@ -1,10 +1,8 @@
-// T1: one-shot onboarding structuring call (Groq, no graph).
-// Free text in -> StartupContext draft out. Exactly one retry on malformed
-// output, then a structured error. Never returns a partial object.
+
 import { StartupContextSchema, type StartupContext } from "@ai-office/shared-types";
-import { StructuredCallError } from "../errors.js";
-import { getChatModel } from "../../agents/common/llm.js";
-import { buildCorrectivePrompt, buildOnboardingPrompt } from "./prompts.js";
+import { StructuredCallError } from "../errors";
+import { getChatModel } from "../../agents/common/llm";
+import { buildCorrectivePrompt, buildOnboardingPrompt } from "./prompts";
 
 /** Minimal surface T1 needs — real Runnable or test stub. */
 export interface OnboardingModel {

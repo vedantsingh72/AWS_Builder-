@@ -5,3 +5,6 @@ dist/
 .vite/
 coverage/
 pgdata/
+.agents
+.claude
+.windsurf
