@@ -7,9 +7,9 @@ Updated: 2026-09-14. Owner of this file: both (update on every task completion).
 
 | State | Count | Tasks |
 |---|---|---|
-| Implemented | 7 | T0, T1, T2, T3, T4, T5, T6 |
+| Implemented | 9 | T0, T1, T2, T3, T4, T5, T6, T7, T8 |
 | In progress | 0 | — |
-| Remaining | 23 | T7–T29 |
+| Remaining | 21 | T9–T29 |
 
 ## Implemented
 
@@ -19,12 +19,12 @@ Updated: 2026-09-14. Owner of this file: both (update on every task completion).
 - [x] T3 Onboarding UI — `frontend/src/pages/onboarding.tsx`, `frontend/src/lib/{api,mocks}.ts`, `frontend/src/App.tsx`.
 - [x] T4 Org-suggestion call — `services/ai/src/calls/org-suggestion/{prompts,call,filter,index}.ts`, `POST /org/suggest` on ai service (`src/index.ts`, express), `scripts/verify-t4.mjs`. Verify: `npm run verify:t4` (+ live e2e, see test log).
 - [x] T5 Org endpoints & role constraint — `services/api/src/modules/org/{schemas,service,router}.ts`, mount in `src/app.ts`, `AgentRole` DB enum (pre-existing in `prisma/schema.prisma:21-28`). Stateless select (no Agent writes — T9 owns instantiation). Verify: `npm run verify:t5` (live, needs `DATABASE_URL`), e2e 200-path via `verify:t5:e2e`.
-- [x] T6 Org suggestion UI — `frontend/src/pages/OrgSuggestion.tsx` (six role cards, CEO toggle locked ON, hash route `#/org`), `lib/api.ts` (`getOrgSuggestion`/`selectOrg`), `lib/mocks.ts` (`mockOrgSuggestion`, explicit demo-preview only), `App.tsx` hash routing, `onboarding.tsx` "Configure team →" link on approved. Verify: `typecheck --workspace=@ai-office/web` + API combo checks in T5 log (all-on 200, CEO-only 200, CEO-off 400).
+- [x] T6 Org suggestion UI — `frontend/src/pages/OrgSuggestion.tsx` (six role cards, CEO toggle locked ON, hash route `#/org`, "Connect a resource →" link on saved), `lib/api.ts` (`getOrgSuggestion`/`selectOrg`), `lib/mocks.ts` (`mockOrgSuggestion`, explicit demo-preview only), `App.tsx` hash routing, `onboarding.tsx` "Configure team →" link on approved. Verify: `typecheck --workspace=@ai-office/web` + API combo checks in T5 log (all-on 200, CEO-only 200, CEO-off 400).
+- [x] T7 CEO-only private context store — `services/api/src/modules/private-context/{schemas,service,router}.ts` (PUT/GET `/private-context` + read-only `GET /private-context/ceo`), `requireCEOAgent` guard (role=CEO + same startup, else 403/404), mount in `src/app.ts`. No migration (model pre-existed). Verify: `npm run verify:t7` (live, needs `DATABASE_URL`; agent rows seeded test-only until T9).
+- [x] T8 Credential-entry UI — `frontend/src/components/PrivateContextForm.tsx` (presentational, "visible to CEO only" label), `frontend/src/pages/Connect.tsx` (`#/connect`: CEO resolution → load/save, no-CEO state, member-preview toggle that unmounts the secret branch), `lib/api.ts` (`getCEOAgentId`/`getPrivateContext`/`savePrivateContext`), `lib/mocks.ts` (`mockPrivateContext`). No shared runtime imports (blank-page rule). Verify: web typecheck + headless render of `/`, `#/org`, `#/connect` with zero console errors + live API round-trip in T7 log (same functions the UI calls).
 
-## Remaining (not started) — 23 tasks
+## Remaining (not started) — 21 tasks
 
-- [ ] T7 CEO-only private context store — `services/api/src/modules/private-context`
-- [ ] T8 Credential-entry UI — `frontend/src/components`
 - [ ] T9 Instantiation endpoint — `services/api/src/modules/agents`
 - [ ] T10 Agent context builders — `services/ai/src/agents/common/context.ts`
 - [ ] T11 LangGraph skeleton — `services/ai/src/graph/build.ts`
@@ -56,6 +56,8 @@ Updated: 2026-09-14. Owner of this file: both (update on every task completion).
 - 2026-09-14: `npm run verify:t5` (live, Postgres 5434) — ALL_T5_LIVE_CHECKS_PASSED, 12/12: fixture approved; select all-on 200; CEO-only 200; no-CEO 400; Legal Counsel 400; unknown startup 404; suggest missing-id 400 / unknown 404 / unapproved 422 / AI-down 502; prisma invalid-role rejected; raw-SQL invalid-enum rejected by Postgres.
 - 2026-09-14: T4→T5 live e2e (`verify:t5:e2e`, real Groq) — T4_T5_E2E_PASSED: ai `POST /org/suggest` 200 direct; api `GET /org/suggest` 200 with exactly `CEO,TECH_MANAGER,BACKEND_ENGINEER,FRONTEND_ENGINEER,GROWTH_MANAGER,MARKETING_EMPLOYEE`, all reasons non-empty. Model genuinely differentiated (Growth/Marketing OFF at MVP stage).
 - 2026-09-14: T6 — web typecheck PASS; UI toggle combos covered at API level in T5 log (UI blocks CEO-off by construction: toggle disabled + forced ON, client guard + server 400). Browser click-through still manual (no browser harness in repo).
+- 2026-09-14: `npm run verify:t7` (live, Postgres 5434) — ALL_T7_LIVE_CHECKS_PASSED, 11/11: PUT as CEO 200; PUT as worker 403; PUT missing fields 400; re-PUT upserts (rows 1→1); GET as CEO returns note; GET as worker 403; GET unknown agent 404; CEO lookup 200/404; startup + org/select responses leak nothing; org/suggest leak audit SKIP (AI down → 502; 200-path covered by T5 e2e shape).
+- 2026-09-14: T8 — web typecheck PASS; headless-Chrome dump-dom: `/`, `#/org`, `#/connect` all render with zero console errors; save round-trip proven live at API level in T7 log (same `savePrivateContext`/`getPrivateContext` the UI calls); isolation by construction (secret renders only inside the CEO panel branch; member-preview branch is a static placeholder). Full browser save-flow click-through still manual.
 - 2026-09-14 findings (action needed, out of T4–T6 scope):
   1. Plan default model `llama-3.3-70b-versatile` is decommissioned on Groq (account model list has no Llama chat models; only guard models). Live e2e ran with `E2E_AI_MODEL=openai/gpt-oss-20b` override. Decide a new default and update `config.ts` / compose / `.env.example`, or pin per-call model. Still open: running `ai` container returns `MODEL_CALL_FAILED` on `/org/suggest` for the same reason.
   2. Fixed repo-wide ESM bug: extensionless relative imports fail under plain `node` against `dist` (verify-t1 was broken too). Changed touched chain to `.js` extensions (`ai/src/calls/*`, `agents/common/llm.ts`, `client.ts`). Consider a lint rule.

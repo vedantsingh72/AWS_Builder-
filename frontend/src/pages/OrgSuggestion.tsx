@@ -234,10 +234,18 @@ export function OrgSuggestion() {
                   : `Confirm team (${selectedCount} selected)`}
               </button>
             ) : (
-              <div className="mt-8 rounded-2xl bg-neutral-100 px-6 py-4 text-center">
-                <p className="font-mono text-xs uppercase tracking-widest text-black">
-                  ✓ Team locked in &mdash; {selectedCount} roles selected.
-                </p>
+              <div>
+                <div className="mt-8 rounded-2xl bg-neutral-100 px-6 py-4 text-center">
+                  <p className="font-mono text-xs uppercase tracking-widest text-black">
+                    ✓ Team locked in &mdash; {selectedCount} roles selected.
+                  </p>
+                </div>
+                <a
+                  href="#/connect"
+                  className="mt-4 block w-full rounded-full bg-black px-8 py-4 text-center text-sm font-bold uppercase tracking-widest text-white transition-all hover:bg-neutral-800"
+                >
+                  Connect a resource &rarr;
+                </a>
               </div>
             )}
           </div>

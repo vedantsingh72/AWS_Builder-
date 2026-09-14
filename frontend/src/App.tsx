@@ -1,13 +1,18 @@
 import { useEffect, useState } from "react";
 import { Onboarding } from "./pages/onboarding";
 import { OrgSuggestion } from "./pages/OrgSuggestion";
+import { Connect } from "./pages/Connect";
 
-function routeFromHash(): "onboarding" | "org" {
-  return window.location.hash === "#/org" ? "org" : "onboarding";
+type Route = "onboarding" | "org" | "connect";
+
+function routeFromHash(): Route {
+  if (window.location.hash === "#/org") return "org";
+  if (window.location.hash === "#/connect") return "connect";
+  return "onboarding";
 }
 
 export default function App() {
-  const [route, setRoute] = useState<"onboarding" | "org">(routeFromHash);
+  const [route, setRoute] = useState<Route>(routeFromHash);
 
   useEffect(() => {
     const onHash = () => setRoute(routeFromHash());
@@ -15,5 +20,7 @@ export default function App() {
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
 
-  return route === "org" ? <OrgSuggestion /> : <Onboarding />;
+  if (route === "org") return <OrgSuggestion />;
+  if (route === "connect") return <Connect />;
+  return <Onboarding />;
 }

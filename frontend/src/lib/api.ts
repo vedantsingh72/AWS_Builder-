@@ -81,3 +81,37 @@ export function selectOrg(startupId: string, roles: string[]) {
     body: JSON.stringify({ startupId, roles }),
   });
 }
+
+// Local shape mirroring the T7 row — no shared-types runtime import in the
+// browser (see OrgSuggestion.tsx note).
+export type PrivateContext = {
+  id: string;
+  startupId: string;
+  agentId: string;
+  resourceLabel: string;
+  resourceValue: string;
+};
+
+export function getCEOAgentId(startupId: string) {
+  return request<{ startupId: string; agentId: string }>(
+    `/private-context/ceo?startupId=${encodeURIComponent(startupId)}`,
+    { method: "GET" },
+  );
+}
+
+export function getPrivateContext(startupId: string, agentId: string) {
+  const q = `startupId=${encodeURIComponent(startupId)}&agentId=${encodeURIComponent(agentId)}`;
+  return request<PrivateContext>(`/private-context?${q}`, { method: "GET" });
+}
+
+export function savePrivateContext(input: {
+  startupId: string;
+  agentId: string;
+  resourceLabel: string;
+  resourceValue: string;
+}) {
+  return request<PrivateContext>("/private-context", {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+}

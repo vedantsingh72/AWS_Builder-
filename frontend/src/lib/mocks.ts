@@ -1,4 +1,4 @@
-import type { OrgSuggestion, StructuredFields } from "./api";
+import type { OrgSuggestion, PrivateContext, StructuredFields } from "./api";
 
 const INDUSTRY_KEYWORDS: Record<string, string[]> = {
   Healthtech: ["clinic", "patient", "health", "medical", "doctor"],
@@ -47,4 +47,17 @@ export async function mockOrgSuggestion(): Promise<OrgSuggestion[]> {
     { role: "GROWTH_MANAGER", recommendedOn: true, reason: "Turns the product into messaging and distribution." },
     { role: "MARKETING_EMPLOYEE", recommendedOn: true, reason: "Drafts copy and campaigns from growth direction." },
   ];
+}
+
+// Dev-only fallback for T8 while the T7 endpoints are unavailable.
+export async function mockPrivateContext(startupId: string, agentId: string): Promise<PrivateContext> {
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  return {
+    id: "mock-private-context",
+    startupId,
+    agentId,
+    resourceLabel: "GitHub repo",
+    resourceValue: "https://github.com/example/demo",
+  };
 }
