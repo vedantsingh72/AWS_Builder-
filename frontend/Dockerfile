@@ -1,6 +1,6 @@
 FROM node:20-alpine
 WORKDIR /app
-COPY package.json package-lock.json* ./
+COPY package.json package-lock.json* tsconfig.base.json ./
 COPY frontend/package.json ./frontend/
 COPY shared/package.json ./shared/
 RUN npm install --workspace=@ai-office/web --workspace=@ai-office/shared-types

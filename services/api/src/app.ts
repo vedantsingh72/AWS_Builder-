@@ -1,6 +1,7 @@
 import express, { type ErrorRequestHandler } from "express";
 import cors from "cors";
 import { startupRouter } from "./modules/startup/router";
+import { orgRouter } from "./modules/org/router";
 
 export function createApp() {
   const app = express();
@@ -11,6 +12,7 @@ export function createApp() {
   app.get("/health", (_req, res) => res.json({ ok: true }));
 
   app.use(startupRouter);
+  app.use(orgRouter);
 
   const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     console.error(err);

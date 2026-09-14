@@ -1,7 +1,7 @@
 // Groq model factory (ChatGroq). Injectable for tests — production reads env.
 import { ChatGroq } from "@langchain/groq";
-import { config } from "../../config";
-import { StructuredCallError } from "../../calls/errors";
+import { config } from "../../config.js";
+import { StructuredCallError } from "../../calls/errors.js";
 
 export const DEFAULT_MODEL = "llama-3.3-70b-versatile";
 export const FAST_MODEL = "llama-3.1-8b-instant";

@@ -1,9 +1,9 @@
 FROM node:20-alpine
 WORKDIR /app
-COPY package.json package-lock.json* ./
+COPY package.json package-lock.json* tsconfig.base.json ./
 COPY shared/package.json ./shared/
 COPY services/ai/package.json ./services/ai/
-RUN npm install --workspace=@ai-office/ai --workspace=@ai-office/shared-types
+RUN npm install --workspace=@ai-office/ai --workspace=@ai-office/shared-types tsx
 COPY shared ./shared
 COPY services/ai ./services/ai
 WORKDIR /app/services/ai

@@ -1,4 +1,4 @@
-import type { StructuredFields } from "./api";
+import type { OrgSuggestion, StructuredFields } from "./api";
 
 const INDUSTRY_KEYWORDS: Record<string, string[]> = {
   Healthtech: ["clinic", "patient", "health", "medical", "doctor"],
@@ -32,4 +32,19 @@ export async function structureDescription(rawDescription: string): Promise<Stru
     constraints: [],
     priorities: ["Ship the MVP"],
   };
+}
+
+// Dev-only fallback for T6 while the T5 endpoints are unavailable.
+// Never used when the real API answers — see OrgSuggestion page.
+export async function mockOrgSuggestion(): Promise<OrgSuggestion[]> {
+  await new Promise((resolve) => setTimeout(resolve, 600));
+
+  return [
+    { role: "CEO", recommendedOn: true, reason: "Every org needs a CEO to talk to the founder and own decisions." },
+    { role: "TECH_MANAGER", recommendedOn: true, reason: "Breaks the product goal into backend and frontend work." },
+    { role: "BACKEND_ENGINEER", recommendedOn: true, reason: "Builds APIs, data models, and integrations." },
+    { role: "FRONTEND_ENGINEER", recommendedOn: true, reason: "Builds the screens the founder and users see." },
+    { role: "GROWTH_MANAGER", recommendedOn: true, reason: "Turns the product into messaging and distribution." },
+    { role: "MARKETING_EMPLOYEE", recommendedOn: true, reason: "Drafts copy and campaigns from growth direction." },
+  ];
 }

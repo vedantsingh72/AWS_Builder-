@@ -53,3 +53,31 @@ export function getStartup(id: string) {
 export function approveStartup(id: string, input: { rawDescription: string } & StructuredFields) {
   return request<Startup>(`/startup/${id}`, { method: "PUT", body: JSON.stringify(input) });
 }
+
+export type AgentRole = string;
+
+export type OrgSuggestion = {
+  role: string;
+  recommendedOn: boolean;
+  reason: string;
+  score?: number;
+};
+
+export type OrgSelectResult = {
+  startupId: string;
+  roles: string[];
+};
+
+export function getOrgSuggestion(startupId: string) {
+  return request<{ startupId: string; suggestions: OrgSuggestion[] }>(
+    `/org/suggest?startupId=${encodeURIComponent(startupId)}`,
+    { method: "GET" },
+  );
+}
+
+export function selectOrg(startupId: string, roles: string[]) {
+  return request<OrgSelectResult>("/org/select", {
+    method: "POST",
+    body: JSON.stringify({ startupId, roles }),
+  });
+}

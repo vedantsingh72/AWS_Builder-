@@ -11,7 +11,9 @@
   "scripts": {
     "typecheck": "npm run typecheck --workspaces --if-present",
     "verify:t0": "npm run typecheck --workspace=@ai-office/shared-types",
-    "verify:t1": "npm run verify:t1 --workspace=@ai-office/ai"
+    "verify:t1": "npm run verify:t1 --workspace=@ai-office/ai",
+    "verify:t4": "npm run verify:t4 --workspace=@ai-office/ai",
+    "verify:t5": "npm run verify:t5 --workspace=@ai-office/api"
   },
   "devDependencies": {
     "typescript": "^5.5.4",

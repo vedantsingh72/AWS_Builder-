@@ -1,8 +1,8 @@
 
 import { StartupContextSchema, type StartupContext } from "@ai-office/shared-types";
-import { StructuredCallError } from "../errors";
-import { getChatModel } from "../../agents/common/llm";
-import { buildCorrectivePrompt, buildOnboardingPrompt } from "./prompts";
+import { StructuredCallError } from "../errors.js";
+import { getChatModel } from "../../agents/common/llm.js";
+import { buildCorrectivePrompt, buildOnboardingPrompt } from "./prompts.js";
 
 /** Minimal surface T1 needs — real Runnable or test stub. */
 export interface OnboardingModel {

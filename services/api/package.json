@@ -10,7 +10,9 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "dev": "tsx src/index.ts",
     "db:generate": "prisma generate",
-    "db:push": "prisma db push"
+    "db:push": "prisma db push",
+    "verify:t5": "tsx scripts/verify-t5-live.ts",
+    "verify:t5:e2e": "tsx scripts/verify-t5-suggest200-e2e.ts"
   },
   "dependencies": {
     "@ai-office/shared-types": "0.1.0",
